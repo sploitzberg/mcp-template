@@ -81,8 +81,8 @@ jobs:
           go-version-file: go.mod
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          # Must be v2.x — .golangci.yml uses the v2 schema (`version: "2"`, `formatters`, etc.).
-          # Use binary install (default): `goinstall` targets the v1 module path and cannot install v2.
+          # v7+ is required for golangci-lint v2; v6 only accepts v1 version strings.
+          # .golangci.yml uses the v2 schema (`version: "2"`, `formatters`, etc.).
           version: v2.11.4
