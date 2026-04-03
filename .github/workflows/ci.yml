@@ -84,6 +84,5 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           # Must be v2.x — .golangci.yml uses the v2 schema (`version: "2"`, `formatters`, etc.).
-          # `latest` with goinstall resolves to v1 and breaks `golangci-lint config verify`.
+          # Use binary install (default): `goinstall` targets the v1 module path and cannot install v2.
           version: v2.11.4
-          install-mode: goinstall
