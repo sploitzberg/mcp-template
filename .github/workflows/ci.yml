@@ -83,5 +83,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
-          install-mode: goinstall # build from source with runner's Go; avoids binary Go version mismatch
+          # Must be v2.x — .golangci.yml uses the v2 schema (`version: "2"`, `formatters`, etc.).
+          # `latest` with goinstall resolves to v1 and breaks `golangci-lint config verify`.
+          version: v2.11.4
+          install-mode: goinstall
