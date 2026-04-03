@@ -6,15 +6,15 @@ Checklist for reviewing Go code in this hexagonal architecture codebase.
 ## Hexagonal Compliance
 - [ ] Core does not import adapters or infrastructure packages
 - [ ] Domain entities have no `json`, `dynamodbav`, or other serialization tags
-- [ ] Handlers depend on port interfaces, not concrete services
+- [ ] MCP tool handlers and other driver adapters depend on port interfaces, not concrete services
 - [ ] Wiring happens only in `cmd/app/main.go`
-- [ ] New ports/adapters follow `cmd/architecture/HEXAGONAL.md`
+- [ ] New ports/adapters follow `docs/architecture/HEXAGONAL.md`
 
 ## Go Conventions
 - [ ] All errors checked and wrapped with `fmt.Errorf("context: %w", err)`
 - [ ] Imports grouped: stdlib, then internal (blank line between)
 - [ ] Exported functions have comments starting with the function name
-- [ ] No external deps added unless necessary (template uses stdlib)
+- [ ] New external deps justified (baseline: [MCP Go SDK](https://github.com/modelcontextprotocol/go-sdk); see `go.mod`)
 - [ ] `go fmt ./...` and `go vet ./...` pass
 
 ## Testing

@@ -1,13 +1,13 @@
 # Create PR
 
 ## Overview
-Create a well-structured pull request for changes to go-hexagonal-template.
+Create a well-structured pull request for changes to mcp-template.
 
 ## Pre-PR Checklist
 - [ ] `make test` passes
 - [ ] `go build ./...` succeeds
 - [ ] `go fmt ./...` and `go vet ./...` run
-- [ ] New code follows `cmd/architecture/HEXAGONAL.md`
+- [ ] New code follows `docs/architecture/HEXAGONAL.md`
 - [ ] Core does not import adapters
 
 ## PR Description Template

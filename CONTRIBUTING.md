@@ -1,24 +1,24 @@
-# Contributing to go-hexagonal-template
+# Contributing to mcp-template
 
 Thanks for contributing. This document covers how to set up, develop, and submit changes.
 
 ## Prerequisites
 
 - Go 1.25.6 or later
-- `golangci-lint` (optional, for local linting): `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`
+- `golangci-lint` v2 (optional, for local linting): `go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest`
 
 ## Development Setup
 
 ```bash
-git clone https://github.com/sploitzberg/go-hexagonal-template.git
-cd go-hexagonal-template
+git clone https://github.com/sploitzberg/mcp-template.git
+cd mcp-template
 go mod download
 make test
 ```
 
 ## Before You Start
 
-1. **Read the architecture** — [cmd/architecture/HEXAGONAL.md](cmd/architecture/HEXAGONAL.md) describes the hexagonal pattern. Follow it for new features.
+1. **Read the architecture** — [docs/architecture/HEXAGONAL.md](docs/architecture/HEXAGONAL.md) describes the hexagonal pattern. Follow it for new features.
 2. **Check conventions** — [AGENTS.md](AGENTS.md) covers build commands, code style, and structure.
 3. **Open an issue** (optional) — For larger changes, open an issue first to discuss.
 
@@ -31,7 +31,7 @@ make test
    - `go build ./...`
    - `go fmt ./...`
    - `go vet ./...`
-   - `golangci-lint run` (if installed)
+   - `golangci-lint run ./...` (if installed; same config as CI — [`.golangci.yml`](.golangci.yml))
 4. **Commit** with clear messages.
 5. **Push** and open a pull request.
 
@@ -41,7 +41,8 @@ make test
 - [ ] `go build ./...` succeeds
 - [ ] `go fmt ./...` applied
 - [ ] `go vet ./...` passes
-- [ ] New code follows [cmd/architecture/HEXAGONAL.md](cmd/architecture/HEXAGONAL.md)
+- [ ] `golangci-lint run ./...` passes (if you use the linter locally)
+- [ ] New code follows [docs/architecture/HEXAGONAL.md](docs/architecture/HEXAGONAL.md)
 - [ ] Core does not import adapters; domain stays pure
 - [ ] Unit tests added for new behavior (use mocks in `internal/tests/mock/`)
 - [ ] Wiring in `cmd/app/main.go` updated if adding ports/adapters
@@ -58,7 +59,7 @@ See [.editorconfig](.editorconfig) for editor settings.
 
 ## Adding New Features
 
-Follow the order in [cmd/architecture/HEXAGONAL.md](cmd/architecture/HEXAGONAL.md):
+Follow the order in [docs/architecture/HEXAGONAL.md](docs/architecture/HEXAGONAL.md):
 
 1. Domain entity
 2. Driven ports

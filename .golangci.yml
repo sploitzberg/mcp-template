@@ -1,29 +1,44 @@
-# golangci-lint config - https://golangci-lint.run
-# v1.64 format (no version field, linters-settings)
-
+# golangci-lint v2 — https://golangci-lint.run
+version: "2"
 run:
   timeout: 5m
   modules-download-mode: readonly
-
 linters:
+  # Same minimal set as pre-migration (gosimple is covered by staticcheck in modern golangci-lint).
+  default: none
   enable:
     - errcheck
-    - gosimple
     - govet
     - ineffassign
     - staticcheck
     - unused
   disable:
     - exhaustive
-
-linters-settings:
-  govet:
-    enable:
-      - shadow
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    govet:
+      enable:
+        - shadow
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
   max-issues-per-linter: 50
   max-same-issues: 3
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

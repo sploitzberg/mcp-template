@@ -1,44 +1,43 @@
-# Agent Development Guidelines for go-hexagonal-template
+# Agent Development Guidelines for mcp-template
 
 ## Build & Test Commands
 
-- **Run**: `make run` or `go run ./cmd/app` - Runs the HTTP API (default :8080)
-- **Build**: `make build` or `go build ./...` - Builds to `bin/app`
-- **Build All Platforms**: `make build-all` - Cross-compiles for darwin/linux/windows (amd64, arm64)
-- **Test All**: `make test` or `go test ./...` - Runs all tests
+- **Run (HTTP/SSE, default)**: `make run` or `go run ./cmd/app` — listens on `MCP_HTTP_ADDR` (default `:8081`); **Cursor `mcp.json`**: `"url": "http://127.0.0.1:8081/sse"` while the server is running
+- **Run (stdio)**: `MCP_TRANSPORT=stdio make run` — subprocess / stdin–stdout; use `command`/`args`/`cwd` in Cursor, not `url`
+- **Build**: `make build` or `go build ./...` — Builds to `bin/app`
+- **Build All Platforms**: `make build-all` — Cross-compiles for darwin/linux/windows (amd64, arm64)
+- **Test All**: `make test` or `go test ./...` — Runs all tests
 - **Test Single**: `go test -run TestName ./internal/tests/unit`
-- **Test with Race**: `go test -race ./...` - Run tests with race detection
+- **Test with Race**: `go test -race ./...` — Run tests with race detection
 - **Format**: `go fmt ./...`
-- **Lint**: `go vet ./...` or `golangci-lint run` (uses `.golangci.yml`)
-- **Clean**: `make clean` - Removes `bin/`
+- **Lint**: `go vet ./...` or `golangci-lint run` (uses [`.golangci.yml`](.golangci.yml) **v2** schema; install [latest golangci-lint](https://golangci-lint.run/welcome/install/))
+- **Clean**: `make clean` — Removes `bin/`
 
 ## Code Style & Conventions
 
-- **Package Structure**: `cmd/` for executables, `internal/` for private packages. See `cmd/architecture/HEXAGONAL.md` for layout.
+- **Package Structure**: `cmd/` for executables, `internal/` for private packages. See `docs/architecture/HEXAGONAL.md` for layout.
 - **Imports**: Group as stdlib, then internal packages with blank lines between
 - **Naming**: camelCase for variables/functions, PascalCase for exported items
 - **Error Handling**: Check all errors; wrap with `fmt.Errorf("context: %w", err)`
 - **Comments**: Start with function name for exported functions
 - **Testing**: Test files end with `_test.go`; use mocks from `internal/tests/mock/`
-- **Dependencies**: Use only Go standard library; run `go mod tidy` if adding deps
-- **Architecture**: Follow hexagonal (Ports & Adapters). Core never imports adapters.
+- **Architecture**: Follow hexagonal (Ports & Adapters). Core never imports adapters or `github.com/modelcontextprotocol/go-sdk/mcp`.
 
 ## Architecture Reference
 
-- **Hexagonal Pattern**: See `cmd/architecture/HEXAGONAL.md` for how to create ports, adapters, services, and wire them in `cmd/app/main.go`
-- **Adding Features**: Create driven ports → implement adapters → extend driver port → implement service → add handler → wire in main
+- **Hexagonal Pattern**: See `docs/architecture/HEXAGONAL.md` for ports, adapters, and wiring in `cmd/app/main.go`
+- **Adding Features**: driven port → adapter → extend driver port → service → MCP tool registration → wire in main
 
-## Module: github.com/sploitzberg/go-hexagonal-template | Go Version: 1.25.6
+## Module: github.com/sploitzberg/mcp-template | Go Version: 1.25.6
 
 ## Active Technologies
 
-- Go 1.25.6 + standard library (`net/http`, `encoding/json`, `context`, `sync`)
-- Hexagonal architecture (Ports & Adapters) with mock-based adapters
-- No external dependencies
+- Go 1.25.6 + [github.com/modelcontextprotocol/go-sdk](https://github.com/modelcontextprotocol/go-sdk) **v1.4.1** (`mcp` package — MCP server; default HTTP/SSE, optional stdio)
+- Hexagonal architecture (Ports & Adapters) with mock-based tests
 
 ## AI Workflow & Scaffolding
 
-- When scaffolding new features, consult `cmd/architecture/HEXAGONAL.md` first
+- When scaffolding new features, consult `docs/architecture/HEXAGONAL.md` first
 - Add domain → ports → service → adapters → wiring in that order
 - Use `internal/tests/mock/` for test doubles; keep core testable in isolation
 - Wire dependencies only in `cmd/app/main.go`; no init-time wiring
@@ -59,7 +58,7 @@
 | `go-build-test`         | Build, test, validate; Makefile commands | `/go-build-test`         |
 | `go-hexagonal`          | Project context, layout, conventions     | `/go-hexagonal`          |
 | `go-add-driven-adapter` | Add driven port + adapter                | `/go-add-driven-adapter` |
-| `go-add-dep`            | Add Go dependency (template uses stdlib) | `/go-add-dep`            |
+| `go-add-dep`            | Add Go dependencies beyond the MCP SDK   | `/go-add-dep`            |
 
 ## Commands (`.cursor/commands/`)
 

@@ -1,11 +1,11 @@
 ---
 name: go-add-dep
-description: Add a new Go dependency. Use when extending the template with external packages (template uses standard library only by default).
+description: Add a new Go dependency. Use when adding packages beyond the MCP Go SDK (e.g. database drivers).
 ---
 
 # Add Go Dependency
 
-This template uses only the standard library. Add deps when needed (DB driver, HTTP client, etc.).
+This template already depends on `github.com/modelcontextprotocol/go-sdk/mcp`. Add other deps when needed (DB driver, HTTP client, etc.).
 
 ## Process
 

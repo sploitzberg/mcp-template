@@ -84,4 +84,4 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
-          install-mode: goinstall  # build from source with runner's Go (1.25); avoids binary Go version mismatch
+          install-mode: goinstall # build from source with runner's Go; avoids binary Go version mismatch

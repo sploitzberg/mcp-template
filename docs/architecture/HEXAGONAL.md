@@ -7,51 +7,53 @@ This document describes the hexagonal architecture pattern used in this codebase
 ## Core Concepts
 
 - **Core**: The center of the hexagon. Contains domain models and business logic. Has no dependency on HTTP, databases, or external systems.
-- **Driver actors**: Trigger communication with the core (e.g. HTTP clients, CLI users). They call into the core.
+- **Driver actors**: Trigger communication with the core (e.g. MCP clients, HTTP clients, CLI users). They call into the core.
 - **Driven actors**: The core calls them (e.g. databases, external APIs). They provide capabilities the core needs.
 - **Driver port**: Interface that defines what the core exposes. Handlers depend on this.
 - **Driven port**: Interface that defines what the core needs. Adapters implement this.
-- **Driver adapter**: Transforms external requests (HTTP, CLI) into core service calls.
+- **Driver adapter**: Transforms external requests (MCP tools, HTTP, CLI) into core service calls.
 - **Driven adapter**: Implements a driven port for a specific technology (e.g. SQLite, Redis, mock).
 
 ---
 
-## Directory Structure
+## Directory Structure (this repository)
 
 ```
 internal/
-├── core/                    # Business logic (no infra deps)
-│   ├── domain/               # Entities and value objects
-│   │   └── <entity>.go
-│   ├── ports/                # Interfaces (driver + driven)
-│   │   ├── <driven>.go       # What the core needs (Hasher, Repository)
-│   │   ├── <driver>.go       # What the core exposes (Service)
-│   │   └── errors.go         # Shared error types (ValidationError, etc.)
-│   └── services/
-│       └── <domain>/
-│           └── service.go    # Implements driver port, uses driven ports
+├── core/
+│   ├── domain/               # Entities (e.g. item.go)
+│   ├── ports/                # CatalogService (driver), Store (driven), errors.go
+│   └── services/catalog/     # Implements CatalogService
 ├── adapters/
-│   ├── handlers/             # Driver adapters (HTTP, CLI)
-│   │   └── http/
-│   │       ├── handler.go
-│   │       └── router.go
-│   ├── <driven_name>/        # Driven adapters (one per port)
-│   │   └── mock.go           # or sqlite.go, redis.go, etc.
-│   └── repository/
-│       └── memory.go
+│   ├── handlers/mcp/         # MCP tools → driver port (registers mcp.AddTool)
+│   └── store/                # Store driven adapter (dummy.go today; DB later)
 └── tests/
-    ├── mock/                 # Test doubles implementing ports
-    │   ├── hasher.go
-    │   └── repository.go
+    ├── mock/                 # Test doubles (e.g. store.go)
     └── unit/
-        └── <service>_test.go
 
-cmd/
-├── app/
-│   └── main.go               # Wire adapters to ports (DI)
-└── architecture/
-    └── HEXAGONAL.md          # This file
+cmd/app/main.go               # Wire store → catalog service → MCP → HTTP/SSE (default) or stdio
+
+docs/architecture/HEXAGONAL.md
 ```
+
+Sections below use **generic** examples (HTTP, Hasher, Repository) to teach the pattern; this repo’s concrete wiring is **MCP + catalog + Store** as in the tree above.
+
+---
+
+## MCP driver adapter (this repo)
+
+- **Transport**: [Model Context Protocol](https://modelcontextprotocol.io/) via `github.com/modelcontextprotocol/go-sdk/mcp`. Default: **HTTP/SSE** (`NewSSEHandler`, `MCP_HTTP_ADDR` default `:8081`); clients (e.g. Cursor) use **`url`**: `http://127.0.0.1:8081/sse`. Optional: **stdio** when `MCP_TRANSPORT=stdio` (`Server.Run` + `StdioTransport`). Only **`cmd/app/main.go`** and **`internal/adapters/handlers/mcp/`** import the SDK.
+- **Driver port**: `ports.CatalogService` — what MCP tools call (e.g. `ListItems`).
+- **Driven port**: `ports.Store` — data access; default adapter is `internal/adapters/store/dummy.go` (static data). Replace with a real database adapter in `main` when ready.
+- **Registration**: `mcpadapter.RegisterTools(server, catalogService)` adds tools such as `list_items`.
+
+Core rule unchanged: **`internal/core` must not import** `mcp` or adapter packages.
+
+---
+
+## Generic pattern examples (illustrative only)
+
+The numbered steps below use **teaching examples** (`Resource`, `Hasher`, REST HTTP handlers, in-memory repositories). **This repository** ships **MCP tools**, **`CatalogService`**, **`Store`**, and **`internal/adapters/handlers/mcp/`** only—see the directory tree and [MCP driver adapter](#mcp-driver-adapter-this-repo) sections. Use the examples as a pattern reference when adding *new* ports or transports, not as a guarantee that those files exist in this template.
 
 ---
 

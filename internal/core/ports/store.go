@@ -6,7 +6,7 @@ import (
 	"github.com/sploitzberg/mcp-template/internal/core/domain"
 )
 
-// CatalogService is the driver port: what the application exposes to transports (MCP, etc.).
-type CatalogService interface {
+// Store is a driven port for persisted or external item data.
+type Store interface {
 	ListItems(ctx context.Context) ([]domain.Item, error)
 }

@@ -1,12 +1,18 @@
-# go-hexagonal-template
+# mcp-template
 
-A minimal Go boilerplate using [hexagonal architecture](https://alistair.cockburn.us/hexagonal-architecture/) (Ports & Adapters). Zero external dependencies—standard library only. Use this to bootstrap new Go services with a clear, testable structure.
+A minimal Go [Model Context Protocol](https://modelcontextprotocol.io/) server using [hexagonal architecture](https://alistair.cockburn.us/hexagonal-architecture/) (Ports & Adapters). The default transport is **HTTP/SSE** (for clients like Cursor that connect with a **`url`**). **stdio** is optional.
 
 ## Quick Start
 
 ```bash
-# Run the HTTP API (listens on :8080)
+# Run the MCP server (HTTP/SSE on :8081 by default — use Cursor mcp.json "url" below)
 make run
+
+# Optional: bind address (default :8081)
+MCP_HTTP_ADDR=:9090 make run
+
+# stdio instead (subprocess / stdin–stdout; no "url" in Cursor)
+MCP_TRANSPORT=stdio make run
 
 # Run tests
 make test
@@ -18,68 +24,107 @@ make build
 make build-all
 ```
 
-### Try the API
+### Cursor `mcp.json` (HTTP — primary)
 
-```bash
-# Create a resource
-curl -X POST http://localhost:8080/resources -H "Content-Type: application/json" -d '{"content":"hello"}'
+Start the server (`make run`), then add an entry that uses **`url`** only (no `command` / `args` for this server):
 
-# Get by ID (use the ID from the create response)
-curl http://localhost:8080/resources/mock-hello
+```json
+"mcp-template": {
+  "url": "http://127.0.0.1:8081/sse"
+}
 ```
+
+If you change the listen address with `MCP_HTTP_ADDR`, use the same host and port in `url` (for example `http://127.0.0.1:9090/sse`).
+
+### Optional: stdio (spawned process)
+
+Use this when the client runs the binary itself and talks over stdin/stdout. Set `MCP_TRANSPORT=stdio` for the process.
+
+```json
+"mcp-template": {
+  "command": "/absolute/path/to/mcp-template/bin/app",
+  "args": [],
+  "cwd": "/absolute/path/to/mcp-template",
+  "env": {
+    "MCP_TRANSPORT": "stdio"
+  }
+}
+```
+
+Or with `go run` (keep `cwd` at the module root):
+
+```json
+"mcp-template": {
+  "command": "go",
+  "args": ["run", "./cmd/app"],
+  "cwd": "/absolute/path/to/mcp-template",
+  "env": {
+    "MCP_TRANSPORT": "stdio"
+  }
+}
+```
+
+For the newer **streamable HTTP** transport (`NewStreamableHTTPHandler`), see the [SDK examples](https://github.com/modelcontextprotocol/go-sdk) — this template uses **SSE** (`NewSSEHandler`) at `/sse`, matching patterns like [nimblex402](https://github.com/nimblex402/nimblex402).
 
 ## Architecture
 
-The project follows hexagonal (Ports & Adapters) layout:
-
 ```
 internal/
-├── core/           # Business logic (no infra deps)
-│   ├── domain/     # Entities
-│   ├── ports/      # Interfaces (driver + driven)
-│   └── services/   # Use cases
-├── adapters/       # Implementations
-│   ├── handlers/   # HTTP (driver adapter)
-│   ├── hasher/     # Driven adapter
-│   └── repository/ # Driven adapter
+├── core/
+│   ├── domain/       # Entities (e.g. Item)
+│   ├── ports/        # CatalogService (driver), Store (driven)
+│   └── services/     # catalog service
+├── adapters/
+│   ├── handlers/mcp/ # MCP tools → CatalogService, HTTP/SSE bind
+│   └── store/        # Store implementation (dummy data; swap for a DB later)
 └── tests/
-    ├── mock/       # Test doubles
-    └── unit/       # Unit tests
+    ├── mock/         # Test doubles
+    └── unit/
 
-cmd/app/main.go     # Dependency injection / wiring
+cmd/app/main.go       # Wiring: store → service → MCP → HTTP/SSE (default) or stdio
 ```
 
-- **Core** never imports adapters. Domain stays pure (no `json` or DB tags).
-- **Ports** define interfaces; adapters implement them.
+- **Core** never imports adapters or the MCP SDK.
 - **Wiring** happens only in `cmd/app/main.go`.
 
-See [cmd/architecture/HEXAGONAL.md](cmd/architecture/HEXAGONAL.md) for the full pattern and how to add new features.
+See [docs/architecture/HEXAGONAL.md](docs/architecture/HEXAGONAL.md) for the full pattern and how to add features.
 
 ## Development
 
-| Command          | Description                     |
-| ---------------- | ------------------------------- |
-| `make run`       | Run the app                     |
-| `make test`      | Run tests                       |
-| `make build`     | Build to `bin/app`              |
-| `make build-all` | Cross-compile for all platforms |
-| `make clean`     | Remove `bin/`                   |
-| `make help`      | Show targets                    |
+| Command          | Description                                      |
+| ---------------- | ------------------------------------------------ |
+| `make run`       | MCP server on HTTP/SSE (default `:8081`)         |
+| `make test`      | Run tests                                        |
+| `make build`     | Build to `bin/app`                               |
+| `make build-all` | Cross-compile for all platforms                  |
+| `make clean`     | Remove `bin/`                                    |
+| `make help`      | Show targets                                     |
 
 - **Format**: `go fmt ./...`
-- **Lint**: `go vet ./...` or `golangci-lint run`
+- **Lint**: `go vet ./...` and `golangci-lint run ./...` ([v2](https://golangci-lint.run/welcome/install/) — see [`.golangci.yml`](.golangci.yml))
 - **Tests with race detector**: `go test -race ./...`
+
+### Pre-push check (local)
+
+```bash
+gofmt -w .
+go vet ./...
+go test -race ./...
+go build ./...
+golangci-lint run ./...   # optional if installed; matches CI
+```
 
 ## Documentation
 
-| Document                                                       | Purpose                                                  |
-| -------------------------------------------------------------- | -------------------------------------------------------- |
-| [cmd/architecture/HEXAGONAL.md](cmd/architecture/HEXAGONAL.md) | Hexagonal pattern, how to add ports/adapters/services    |
-| [AGENTS.md](AGENTS.md)                                         | Build commands, conventions, subagents, skills, commands |
+| Document | Purpose |
+| -------- | ------- |
+| [docs/architecture/HEXAGONAL.md](docs/architecture/HEXAGONAL.md) | Hexagonal pattern, MCP driver adapter, ports |
+| [AGENTS.md](AGENTS.md) | Build commands, conventions, subagents, skills |
 
 ## Requirements
 
-- Go 1.25.6+
+- **Go** [1.25.6](https://go.dev/dl/) or newer (see [`go.mod`](go.mod))
+- **MCP** — [modelcontextprotocol/go-sdk](https://github.com/modelcontextprotocol/go-sdk) **v1.4.1** (`mcp` package); see [MCP documentation](https://modelcontextprotocol.io/docs/learn/server-concepts)
 
 ## License
 

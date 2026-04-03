@@ -13,7 +13,7 @@ Verify that claimed work is actually complete and functional. Be skeptical—tes
 2. **Check implementation exists**
    - Confirm files were created/updated as claimed
    - Verify wiring in `cmd/app/main.go` includes new adapters
-   - Ensure handlers are registered in the router
+   - Ensure MCP tools are registered in `internal/adapters/handlers/mcp/` (`RegisterTools` or equivalent)
 
 3. **Verify hexagonal compliance**
    - Core does not import `internal/adapters/`

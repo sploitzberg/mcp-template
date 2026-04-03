@@ -1,6 +1,6 @@
 .PHONY: run build build-all test clean help
 BINARY  := app
-PKG     := github.com/sploitzberg/go-hexagonal-template
+PKG     := github.com/sploitzberg/mcp-template
 MAIN    := ./cmd/app
 BINDIR  := bin
 LDFLAGS := -ldflags "-s -w"
@@ -10,7 +10,7 @@ help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Targets:"
-	@echo "  run        Run the application"
+	@echo "  run        Run the MCP server (HTTP/SSE on :8081; Cursor uses url http://127.0.0.1:8081/sse)"
 	@echo "  build      Build for current platform ($(shell go env GOOS)/$(shell go env GOARCH))"
 	@echo "  build-all  Build for linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, windows/amd64"
 	@echo "  test       Run tests"

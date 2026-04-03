@@ -5,7 +5,7 @@ description: Add a new driven port and adapter to the hexagonal architecture. Us
 
 # Add Driven Port & Adapter
 
-Follow `cmd/architecture/HEXAGONAL.md`. Order: port → adapter → mock → wire.
+Follow `docs/architecture/HEXAGONAL.md`. Order: port → adapter → mock → wire.
 
 ## Steps
 
